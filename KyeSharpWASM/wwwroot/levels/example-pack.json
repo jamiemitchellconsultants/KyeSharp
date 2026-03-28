@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "id": "example-pack",
+  "name": "Example Community Pack",
+  "author": "KyeSharp",
+  "description": "Use this file as a starting point for your own imported level packs.",
+  "tiers": [
+    {
+      "id": "bonus",
+      "name": "Bonus",
+      "order": 1,
+      "levels": [
+        {
+          "id": "training-yard",
+          "name": "Training Yard",
+          "hint": "A tiny example showing the supported tile symbols.",
+          "order": 1,
+          "map": [
+            "####################",
+            "#..................#",
+            "#..*...............#",
+            "#..................#",
+            "#....r.............#",
+            "#..................#",
+            "#........s.........#",
+            "#..................#",
+            "#......b...........#",
+            "#..................#",
+            "#..............v...#",
+            "#..................#",
+            "#....*.......*.....#",
+            "#.......P......E...#",
+            "####################"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

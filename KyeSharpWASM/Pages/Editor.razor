@@ -1,0 +1,225 @@
+@page "/editor"
+
+<PageTitle>Level Editor</PageTitle>
+
+<style>
+    .editor-wrap {
+        min-height: 100vh;
+        background: #0a0a1a;
+        color: #d4e6ff;
+        font-family: 'Courier New', monospace;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .editor-title {
+        margin: 2px 0 4px;
+        letter-spacing: 0.14em;
+        color: #f0c040;
+        text-shadow: 0 0 12px #f0c040;
+    }
+
+    .editor-actions,
+    .editor-meta,
+    .editor-tools,
+    .editor-io {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .editor-input,
+    .editor-btn,
+    .tile-btn {
+        background: #101a2d;
+        color: #d4e6ff;
+        border: 1px solid #314c73;
+        border-radius: 8px;
+        padding: 0.45rem 0.7rem;
+        font-family: inherit;
+        font-size: 0.9em;
+    }
+
+    .editor-input {
+        min-width: 160px;
+    }
+
+    .editor-btn,
+    .tile-btn {
+        cursor: pointer;
+    }
+
+    .editor-btn:hover,
+    .tile-btn:hover {
+        background: #162440;
+    }
+
+    .editor-btn.active {
+        background: #20426e;
+        border-color: #4f83c7;
+    }
+
+    .tile-btn.active {
+        background: #20426e;
+        border-color: #4f83c7;
+    }
+
+    .tile-palette {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(96px, 1fr));
+        gap: 6px;
+        width: min(740px, 100%);
+    }
+
+    .status {
+        min-height: 1.4em;
+        color: #7fb0e0;
+        font-size: 0.9em;
+    }
+
+    .status.error {
+        color: #ff9a84;
+    }
+
+    .editor-board-wrap {
+        background: #0f1b31;
+        border: 2px solid #29456f;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 0 20px rgba(30, 80, 150, 0.22);
+        user-select: none;
+    }
+
+    .editor-grid {
+        display: grid;
+        grid-template-columns: repeat(20, 28px);
+        grid-template-rows: repeat(15, 28px);
+        gap: 1px;
+    }
+
+    .editor-cell {
+        width: 28px;
+        height: 28px;
+        border: 1px solid #1f3354;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: bold;
+        color: #d7e8ff;
+        cursor: crosshair;
+    }
+
+    .editor-cell.preview {
+        outline: 2px dashed #9fc3ff;
+        outline-offset: -3px;
+        filter: brightness(1.18);
+    }
+
+    .c-empty { background: #0a1324; }
+    .c-wall  { background: #3b4564; }
+    .c-soft  { background: #824322; }
+    .c-gem   { background: #13344f; color: #00e8ff; }
+    .c-turner { background: #2b1848; color: #d3a6ff; }
+    .c-anti-turner { background: #17373f; color: #8ff0ff; }
+    .c-wormhole { background: #132d51; color: #7fb5ff; }
+    .c-pusher { background: #4a2d0d; color: #ffd58a; }
+    .c-exit  { background: #17351f; color: #00ff88; }
+    .c-player{ background: #3d2a13; color: #ffd064; }
+    .c-roundel { background: #321741; color: #ff88ff; }
+    .c-rocky { background: #13345b; color: #7ed5ff; }
+
+    .editor-output {
+        width: min(760px, 100%);
+        min-height: 175px;
+        background: #0b1426;
+        color: #c9e1ff;
+        border: 1px solid #2c4a72;
+        border-radius: 8px;
+        padding: 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.82em;
+        white-space: pre;
+    }
+
+    .tip {
+        color: #6e8fb7;
+        font-size: 0.82em;
+        text-align: center;
+    }
+</style>
+
+<div class="editor-wrap">
+    <h1 class="editor-title">KYE LEVEL EDITOR</h1>
+
+    <div class="editor-actions">
+        <a class="editor-btn" href="/kye">Play Game</a>
+        <a class="editor-btn" href="/">Home</a>
+    </div>
+
+    <div class="editor-meta">
+        <input class="editor-input" placeholder="Level id" @bind="_levelId" />
+        <input class="editor-input" placeholder="Level name" @bind="_levelName" />
+        <input class="editor-input" placeholder="Hint (optional)" @bind="_levelHint" style="min-width:260px;" />
+    </div>
+
+    <div class="tile-palette">
+        @foreach (var tile in Tiles)
+        {
+            <button type="button" class="tile-btn @(_selectedTile == tile.Symbol ? "active" : null)" @onclick="() => SelectTile(tile.Symbol)">
+                @tile.Symbol - @tile.Label
+            </button>
+        }
+    </div>
+
+    <div class="editor-tools">
+        <button type="button" class="editor-btn @(_toolMode == ToolMode.Paint ? "active" : null)" @onclick="() => SelectTool(ToolMode.Paint)">Paint</button>
+        <button type="button" class="editor-btn @(_toolMode == ToolMode.Rectangle ? "active" : null)" @onclick="() => SelectTool(ToolMode.Rectangle)">Rectangle Fill</button>
+        <button type="button" class="editor-btn @(_toolMode == ToolMode.Line ? "active" : null)" @onclick="() => SelectTool(ToolMode.Line)">Line</button>
+        <button type="button" class="editor-btn" @onclick="Undo">Undo</button>
+        <button type="button" class="editor-btn" @onclick="Redo">Redo</button>
+        <button type="button" class="editor-btn" @onclick="FillEmpty">Clear</button>
+        <button type="button" class="editor-btn" @onclick="ApplyBorderWalls">Border Walls</button>
+        <button type="button" class="editor-btn" @onclick="ApplyBasicTemplate">Basic Template</button>
+        <button type="button" class="editor-btn" @onclick="ValidateMap">Validate</button>
+        <button type="button" class="editor-btn" @onclick="PlayThisLevelAsync">Play This Level</button>
+    </div>
+
+    <div class="editor-io">
+        <button type="button" class="editor-btn" @onclick="ExportLevelAsync">Export JSON</button>
+        <InputFile class="editor-btn" OnChange="ImportLevelAsync" accept=".json,application/json" />
+    </div>
+
+    <div class="status @(_statusIsError ? "error" : null)">@_statusMessage</div>
+
+    <div class="editor-board-wrap" @onmouseup="EndPaint" @onmouseleave="EndPaint">
+        <div class="editor-grid">
+            @for (int row = 0; row < Rows; row++)
+            {
+                @for (int col = 0; col < Cols; col++)
+                {
+                    var r = row;
+                    var c = col;
+                    var display = DisplayTile(r, c);
+                    var previewClass = IsPreviewCell(r, c) ? "preview" : string.Empty;
+                    <div class="editor-cell @CellClass(display) @previewClass"
+                         @onmousedown="() => BeginPaint(r, c)"
+                         @onmouseover="() => PaintOver(r, c)">
+                        @CellGlyph(display)
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="tip">Use Paint, Rectangle, or Line tools. Player `P` and exit `E` stay unique. "Play This Level" opens `/kye` with your editor map.</div>
+
+    <textarea class="editor-output" readonly>@PreviewJson</textarea>
+</div>
+

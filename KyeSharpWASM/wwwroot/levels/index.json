@@ -1,0 +1,77 @@
+{
+  "levels": [
+    {
+      "id": "garden",
+      "name": "Level 1 — The Garden",
+      "file": "level-1.json",
+      "tierId": "beginner",
+      "tierName": "Beginner",
+      "tierOrder": 1,
+      "order": 1,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    },
+    {
+      "id": "crossroads",
+      "name": "Level 2 — Crossroads",
+      "file": "level-4.json",
+      "tierId": "beginner",
+      "tierName": "Beginner",
+      "tierOrder": 1,
+      "order": 2,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    },
+    {
+      "id": "fortress",
+      "name": "Level 3 — The Fortress",
+      "file": "level-2.json",
+      "tierId": "intermediate",
+      "tierName": "Intermediate",
+      "tierOrder": 2,
+      "order": 1,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    },
+    {
+      "id": "caverns",
+      "name": "Level 4 — Echo Caverns",
+      "file": "level-5.json",
+      "tierId": "intermediate",
+      "tierName": "Intermediate",
+      "tierOrder": 2,
+      "order": 2,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    },
+    {
+      "id": "gauntlet",
+      "name": "Level 5 — The Gauntlet",
+      "file": "level-3.json",
+      "tierId": "advanced",
+      "tierName": "Advanced",
+      "tierOrder": 3,
+      "order": 1,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    },
+    {
+      "id": "maelstrom",
+      "name": "Level 6 — Maelstrom",
+      "file": "level-6.json",
+      "tierId": "advanced",
+      "tierName": "Advanced",
+      "tierOrder": 3,
+      "order": 2,
+      "packId": "builtin",
+      "packName": "Core Pack",
+      "packOrder": 0
+    }
+  ]
+}
+

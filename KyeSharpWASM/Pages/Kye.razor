@@ -1,0 +1,921 @@
+@page "/kye"
+
+<PageTitle>Kye</PageTitle>
+
+<style>
+    body { margin: 0; background: #0a0a1a; }
+
+    .kye-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #0a0a1a;
+        min-height: 100vh;
+        padding: 10px;
+        font-family: 'Courier New', monospace;
+        color: #ddd;
+        user-select: none;
+    }
+
+    .kye-title {
+        color: #f0c040;
+        text-shadow: 0 0 14px #f0c040;
+        margin: 6px 0 4px;
+        font-size: 2.2em;
+        letter-spacing: 0.15em;
+    }
+
+    .kye-hud {
+        display: flex;
+        gap: 22px;
+        margin: 4px 0;
+        font-size: 1em;
+        background: #111125;
+        padding: 5px 20px;
+        border-radius: 8px;
+        border: 1px solid #223;
+    }
+
+    .kye-hud span { color: #8ab4e0; }
+    .kye-hud .val { color: #f0c040; font-weight: bold; }
+    .exit-hint { color: #00ff88 !important; animation: blink 0.9s infinite; }
+
+    .kye-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 4px 0 8px;
+    }
+
+    .kye-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #8ab4e0;
+        font-size: 0.92em;
+        flex-wrap: wrap;
+    }
+
+    .kye-select,
+    .kye-toolbar-btn {
+        background: #101a2d;
+        color: #d4e6ff;
+        border: 1px solid #314c73;
+        border-radius: 8px;
+        padding: 0.45rem 0.7rem;
+        font-family: inherit;
+        font-size: 0.92em;
+    }
+
+    .kye-toolbar-btn {
+        cursor: pointer;
+    }
+
+    .kye-toolbar-btn:hover:not(:disabled),
+    .kye-select:hover:not(:disabled) {
+        background: #162440;
+    }
+
+    .kye-select:disabled,
+    .kye-toolbar-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+    .kye-importer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .kye-progress-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .kye-file-input {
+        max-width: 17rem;
+        color: #9bb7d9;
+        font-size: 0.86em;
+    }
+
+    .kye-progress-summary {
+        color: #7fa4cf;
+        font-size: 0.86em;
+    }
+
+    .kye-import-status {
+        margin: 0 0 8px;
+        color: #8fb4db;
+        font-size: 0.82em;
+        text-align: center;
+    }
+
+    .kye-import-status.error {
+        color: #ff9a84;
+    }
+
+    .kye-progress-status {
+        margin: 0 0 8px;
+        color: #9ac4f2;
+        font-size: 0.82em;
+        text-align: center;
+    }
+
+    .kye-progress-status.error {
+        color: #ff9a84;
+    }
+
+    .kye-level-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 1px 0 8px;
+        gap: 2px;
+    }
+
+    .kye-level-name {
+        color: #3a5878;
+        font-size: 0.82em;
+    }
+
+    .kye-level-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .kye-badge {
+        background: #101a2d;
+        color: #9fc2e8;
+        border: 1px solid #243b5d;
+        border-radius: 999px;
+        padding: 0.18rem 0.65rem;
+        font-size: 0.76em;
+    }
+
+    .kye-badge.complete {
+        color: #7dffb5;
+        border-color: #1f6a48;
+    }
+
+    .kye-level-hint {
+        color: #6382a5;
+        font-size: 0.77em;
+        text-align: center;
+        max-width: 38rem;
+    }
+
+    .kye-status {
+        min-width: min(42rem, 92vw);
+        background: rgba(14, 21, 48, 0.92);
+        border: 2px solid #1a3a6a;
+        border-radius: 14px;
+        padding: 24px 28px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(0,80,200,0.22);
+        margin-top: 10px;
+    }
+
+    .kye-status h2 {
+        color: #f0c040;
+        margin: 0 0 8px;
+    }
+
+    .kye-status p {
+        color: #9bb7d9;
+        margin: 0;
+    }
+
+    .kye-status.error {
+        border-color: #7a2f3b;
+        box-shadow: 0 0 30px rgba(160, 40, 50, 0.18);
+    }
+
+    .kye-status.error h2 {
+        color: #ff9a84;
+    }
+
+    .kye-status button {
+        margin-top: 14px;
+        padding: 0.55rem 1rem;
+        background: #1a3a6a;
+        color: #d4e6ff;
+        border: 1px solid #3a6aaa;
+        border-radius: 8px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+
+    .kye-board-wrap {
+        position: relative;
+        overflow: visible;
+        padding: 18px 18px 28px;
+        border: 3px solid #1a2a4a;
+        border-radius: 18px;
+        background: radial-gradient(circle at 50% 20%, rgba(16, 34, 60, 0.92), rgba(5, 10, 22, 0.98));
+        box-shadow: 0 0 30px rgba(10,60,140,0.6);
+    }
+
+    .kye-board {
+        position: relative;
+        outline: none;
+        cursor: default;
+    }
+
+    .kye-board:focus {
+        filter: drop-shadow(0 0 10px rgba(240, 192, 64, 0.32));
+    }
+
+    .iso-tile {
+        position: absolute;
+        width: 40px;
+        height: 112px;
+        pointer-events: none;
+    }
+
+    .iso-floor {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        border: 1px solid rgba(150, 200, 255, 0.14);
+        transform: translateX(-50%) rotate(45deg) scaleY(0.56);
+        transform-origin: center;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.38);
+    }
+
+    .iso-floor::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+        opacity: 0.45;
+        background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.02));
+    }
+
+    .floor-empty {
+        background: linear-gradient(135deg, #10223c, #08111f);
+    }
+
+    .floor-wall {
+        background: linear-gradient(135deg, #2f3656, #171b30);
+    }
+
+    .floor-soft {
+        background: linear-gradient(135deg, #6d3817, #341507);
+    }
+
+    .floor-gem {
+        background: linear-gradient(135deg, #12304d, #071421);
+    }
+
+    .floor-turner {
+        background: linear-gradient(135deg, #3a2a5b, #191133);
+    }
+
+    .floor-anti-turner {
+        background: linear-gradient(135deg, #264e57, #10262a);
+    }
+
+    .floor-wormhole {
+        background: linear-gradient(135deg, #142847, #081628);
+    }
+
+    .floor-exit-c {
+        background: linear-gradient(135deg, #24274c, #0c1022);
+    }
+
+    .floor-exit-o {
+        background: linear-gradient(135deg, #04331a, #03120a);
+        box-shadow: 0 0 12px rgba(0, 255, 136, 0.24);
+    }
+
+    .iso-solid {
+        position: absolute;
+        left: calc(50% - 18px);
+        bottom: 10px;
+        width: 18px;
+        height: var(--solid-height, 56px);
+        overflow: visible;
+        clip-path: polygon(0 14%, 100% 0, 100% 100%, 0 86%);
+        filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.34));
+        transition: height 0.14s ease-out;
+    }
+
+    .iso-solid::before,
+    .iso-solid::after {
+        content: '';
+        position: absolute;
+    }
+
+    .iso-solid::before {
+        left: 0;
+        top: -10px;
+        width: 36px;
+        height: 20px;
+        clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 18px rgba(0,0,0,0.15);
+    }
+
+    .iso-solid {
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.08), inset 1px 0 0 rgba(0, 0, 0, 0.16);
+    }
+
+    .iso-solid::after {
+        top: 0;
+        left: 18px;
+        width: 18px;
+        height: var(--solid-height, 56px);
+        clip-path: polygon(0 0, 100% 14%, 100% 86%, 0 100%);
+        box-shadow: inset 1px 0 0 rgba(255,255,255,0.04);
+    }
+
+    .iso-solid .solid-detail,
+    .iso-front-wall .solid-detail {
+        position: absolute;
+        inset: 6px 2px 6px 2px;
+        opacity: 0.24;
+        background: repeating-linear-gradient(
+            180deg,
+            rgba(255,255,255,0.18) 0 2px,
+            transparent 2px 10px
+        );
+        clip-path: inherit;
+    }
+
+    .solid-wall {
+        background: linear-gradient(180deg, #596481, #2f3652);
+    }
+
+    .solid-wall::before {
+        background: linear-gradient(135deg, #9aa8cb, #616f95);
+    }
+
+    .solid-wall::after {
+        background: linear-gradient(180deg, #3e4864, #171d31);
+    }
+
+    .solid-soft {
+        background: linear-gradient(180deg, #a95728, #6b3215);
+    }
+
+    .solid-soft::before {
+        background: linear-gradient(135deg, #e39b5f, #a75a2b);
+    }
+
+    .solid-soft::after {
+        background: linear-gradient(180deg, #83431d, #45200c);
+    }
+
+    .iso-wall-overlays {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    .iso-front-wall {
+        position: absolute;
+        left: calc(50% - 18px);
+        bottom: 10px;
+        width: 18px;
+        height: var(--solid-height, 56px);
+        clip-path: polygon(0 14%, 100% 0, 100% 100%, 0 86%);
+        box-shadow: inset -1px 0 0 rgba(255,255,255,0.05), inset 1px 0 0 rgba(0,0,0,0.18);
+    }
+
+    .iso-front-wall::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        width: 18px;
+        height: var(--solid-height, 56px);
+        clip-path: polygon(0 0, 100% 14%, 100% 86%, 0 100%);
+        box-shadow: inset 1px 0 0 rgba(255,255,255,0.05);
+    }
+
+    .occluder-wall {
+        background: linear-gradient(180deg, rgba(85, 97, 128, 0.96), rgba(42, 49, 73, 0.98));
+    }
+
+    .occluder-wall::after {
+        background: linear-gradient(180deg, rgba(58, 68, 96, 0.98), rgba(19, 24, 40, 1));
+    }
+
+    .occluder-soft {
+        background: linear-gradient(180deg, rgba(157, 79, 34, 0.96), rgba(95, 46, 20, 0.98));
+    }
+
+    .occluder-soft::after {
+        background: linear-gradient(180deg, rgba(123, 61, 27, 0.98), rgba(62, 29, 12, 1));
+    }
+
+    .iso-object {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        z-index: 2;
+    }
+
+    .iso-object::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        width: 18px;
+        height: 7px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.32);
+        filter: blur(1px);
+    }
+
+    .object-diamond {
+        color: #00e8ff;
+        font-size: 24px;
+        text-shadow: 0 0 12px rgba(0, 232, 255, 0.8);
+        animation: kye-gem-bob 1.35s ease-in-out infinite;
+    }
+
+    .object-turner {
+        color: #d3a6ff;
+        font-size: 21px;
+        text-shadow: 0 0 10px rgba(185, 120, 255, 0.9);
+        display: inline-block;
+        transform-origin: center;
+        animation: kye-turner-cw 1s linear infinite;
+    }
+
+    .object-anti-turner {
+        color: #8ff0ff;
+        font-size: 21px;
+        text-shadow: 0 0 10px rgba(90, 220, 255, 0.9);
+        display: inline-block;
+        transform-origin: center;
+        animation: kye-turner-ccw 1s linear infinite;
+    }
+
+    .object-wormhole {
+        color: #7fb5ff;
+        font-size: 21px;
+        text-shadow: 0 0 12px rgba(120, 175, 255, 0.95);
+        display: inline-block;
+        transform-origin: center;
+        animation: kye-wormhole-pulse 1.45s ease-in-out infinite;
+    }
+
+    .object-exit-c {
+        color: #7a82b5;
+        font-size: 22px;
+    }
+
+    .object-exit-o {
+        color: #00ff88;
+        font-size: 22px;
+        animation: exitglow 1s ease-in-out infinite;
+        text-shadow: 0 0 14px rgba(0, 255, 136, 0.85);
+    }
+
+    .iso-actors-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    .iso-actor {
+        position: absolute;
+        width: 40px;
+        height: 112px;
+        pointer-events: none;
+        transition: left 0.17s ease-out, top 0.17s ease-out;
+        will-change: left, top;
+    }
+
+    .iso-actor-shadow {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        width: 18px;
+        height: 8px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.36);
+        filter: blur(1px);
+        animation: var(--shadow-name, none) 0.22s ease-out;
+    }
+
+    .iso-actor-sprite {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        z-index: 1;
+        animation: var(--hop-name, none) 0.22s ease-out;
+    }
+
+    .iso-actor-sprite::before,
+    .iso-actor-sprite::after {
+        content: '';
+        position: absolute;
+    }
+
+    .actor-player .iso-actor-sprite {
+        width: 28px;
+        height: 26px;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle at 36% 34%, rgba(255,255,255,0.82) 0 12%, transparent 13%),
+            radial-gradient(circle at 38% 44%, rgba(87,34,0,0.92) 0 7%, transparent 8%),
+            radial-gradient(circle at 62% 44%, rgba(87,34,0,0.92) 0 7%, transparent 8%),
+            radial-gradient(ellipse at 50% 66%, rgba(214,77,0,0.9) 0 11%, transparent 12%),
+            radial-gradient(circle at 38% 35%, #ffe060, #ff7700 72%);
+        box-shadow: 0 0 10px #ff8800, inset -2px -3px 0 rgba(150, 45, 0, 0.25);
+    }
+
+    .actor-player .iso-actor-sprite::before {
+        inset: -2px 3px 11px 3px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5), transparent 52%);
+    }
+
+    .actor-roundel .iso-actor-sprite {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle at 35% 32%, rgba(255,255,255,0.85) 0 12%, transparent 13%),
+            radial-gradient(circle at 42% 44%, rgba(70,0,92,0.9) 0 7%, transparent 8%),
+            radial-gradient(circle at 60% 44%, rgba(70,0,92,0.9) 0 7%, transparent 8%),
+            radial-gradient(circle at 38% 35%, #ff88ff, #aa00cc 72%);
+        box-shadow: 0 0 10px #cc00cc, inset -2px -2px 0 rgba(84, 0, 102, 0.26);
+    }
+
+    .actor-rocky .iso-actor-sprite {
+        width: 26px;
+        height: 22px;
+        clip-path: polygon(50% 0, 100% 30%, 100% 76%, 50% 100%, 0 76%, 0 30%);
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.18), transparent 32%),
+            linear-gradient(135deg, #7dd7ff, #0a63da);
+        box-shadow: 0 0 8px #0099ff, inset -2px -2px 0 rgba(0, 44, 118, 0.28);
+    }
+
+    .actor-rocky .iso-actor-sprite::before {
+        left: 6px;
+        right: 6px;
+        top: 6px;
+        height: 5px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, rgba(240, 250, 255, 0.8), rgba(130, 230, 255, 0.35));
+    }
+
+    .actor-rocky .iso-actor-sprite::after {
+        left: 7px;
+        top: 11px;
+        width: 12px;
+        height: 4px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #07386a, #c9f5ff, #07386a);
+    }
+
+    .actor-pusher-left .iso-actor-sprite,
+    .actor-pusher-right .iso-actor-sprite,
+    .actor-pusher-up .iso-actor-sprite,
+    .actor-pusher-down .iso-actor-sprite {
+        width: 24px;
+        height: 20px;
+        border-radius: 5px;
+        background: linear-gradient(180deg, #ffd58a, #d27c12);
+        box-shadow: 0 0 8px rgba(255, 168, 61, 0.75), inset -2px -2px 0 rgba(125, 63, 4, 0.3);
+    }
+
+    .actor-pusher-left .iso-actor-sprite::before,
+    .actor-pusher-right .iso-actor-sprite::before,
+    .actor-pusher-up .iso-actor-sprite::before,
+    .actor-pusher-down .iso-actor-sprite::before {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #3c1b00;
+        font-size: 14px;
+        font-weight: 900;
+        text-shadow: 0 0 4px rgba(255, 232, 186, 0.75);
+    }
+
+    .actor-pusher-left .iso-actor-sprite::before { content: '←'; }
+    .actor-pusher-right .iso-actor-sprite::before { content: '→'; }
+    .actor-pusher-up .iso-actor-sprite::before { content: '↑'; }
+    .actor-pusher-down .iso-actor-sprite::before { content: '↓'; }
+
+    /* ── Overlay ─────────────────────────────────── */
+    .kye-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.72);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+    }
+
+    .kye-message {
+        background: #0e1530;
+        border: 2px solid #1a3a6a;
+        border-radius: 14px;
+        padding: 28px 44px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(0,80,200,0.5);
+    }
+
+    .kye-message h2 { color: #f0c040; font-size: 1.9em; margin: 0 0 8px; }
+    .kye-message h3 { color: #00ff88; font-size: 1.5em; margin: 8px 0; }
+    .kye-message p  { color: #8ab4e0; margin: 4px 0; }
+
+    .kye-message button {
+        margin-top: 14px;
+        padding: 10px 28px;
+        background: #1a3a6a;
+        color: #c8e0ff;
+        border: 1px solid #3a6aaa;
+        border-radius: 7px;
+        font-size: 1.05em;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.15s;
+    }
+    .kye-message button:hover { background: #255090; }
+
+    /* ── Instructions ────────────────────────────── */
+    .kye-info {
+        margin: 7px 0 4px;
+        color: #3a5070;
+        font-size: 0.82em;
+        text-align: center;
+    }
+
+    /* ── D-pad ───────────────────────────────────── */
+    .dpad {
+        display: grid;
+        grid-template-columns: repeat(3, 46px);
+        grid-template-rows: repeat(3, 46px);
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .dpad-btn {
+        width: 46px; height: 46px;
+        background: #111125;
+        border: 1px solid #223355;
+        color: #7a9ac0;
+        font-size: 1.4em;
+        border-radius: 7px;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        font-family: inherit;
+        transition: background 0.1s;
+    }
+    .dpad-btn:active { background: #1a2a4a; color: #fff; }
+
+    .dpad-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3a5070;
+        font-size: 0.8em;
+        border: 1px dashed #1c2740;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="kye-wrapper">
+    <h1 class="kye-title">KYE</h1>
+
+    <div class="kye-toolbar">
+        <label class="kye-selector">
+            <span>Level</span>
+            <select class="kye-select" value="@CurrentLevelKey" @onchange="HandleLevelSelectedAsync" disabled="@(_isLoadingLevels || _levels.Count == 0)">
+                @foreach (var level in OrderedLevels)
+                {
+                    <option value="@level.Key">@LevelSelectorLabel(level)</option>
+                }
+            </select>
+        </label>
+
+        <button class="kye-toolbar-btn" @onclick="ResumeNextIncompleteAsync" disabled="@(_isLoadingLevels || CompletedLevels >= TotalLevels)">Resume Next Incomplete</button>
+        <button class="kye-toolbar-btn" @onclick="ReloadLevelsAsync" disabled="@_isLoadingLevels">Reload Levels</button>
+
+        <div class="kye-progress-tools">
+            <button class="kye-toolbar-btn" @onclick="ExportProgressAsync" disabled="@_isLoadingLevels">Export Progress</button>
+            <InputFile class="kye-file-input" OnChange="ImportProgressAsync" accept=".json,application/json" />
+        </div>
+
+        <div class="kye-importer">
+            <InputFile class="kye-file-input" OnChange="ImportCustomPackAsync" accept=".json,application/json" />
+            @if (HasImportedPacks)
+            {
+                <button class="kye-toolbar-btn" @onclick="ClearImportedPacksAsync">Clear Imported Packs</button>
+            }
+        </div>
+    </div>
+
+    <div class="kye-progress-summary">Completed @CompletedLevels / @TotalLevels levels</div>
+
+    @if (!string.IsNullOrWhiteSpace(_importStatusMessage))
+    {
+        <div class="kye-import-status @(_importStatusIsError ? "error" : null)">@_importStatusMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_progressStatusMessage))
+    {
+        <div class="kye-progress-status @(_progressStatusIsError ? "error" : null)">@_progressStatusMessage</div>
+    }
+
+    @if (_isLoadingLevels)
+    {
+        <div class="kye-status">
+            <h2>Loading Levels…</h2>
+            <p>Reading the level manifest and map files from <code>wwwroot/levels</code>.</p>
+        </div>
+    }
+    else if (_levelLoadError is not null)
+    {
+        <div class="kye-status error">
+            <h2>Couldn't load levels</h2>
+            <p>@_levelLoadError</p>
+            <button @onclick="ReloadLevelsAsync">Try Again</button>
+        </div>
+    }
+    else
+    {
+        <div class="kye-hud">
+            <span>Level <span class="val">@_level</span></span>
+            <span>Score <span class="val">@_score</span></span>
+            <span>💎 <span class="val">@_diamondsLeft</span></span>
+            @if (_diamondsLeft == 0 && !_levelComplete)
+            {
+                <span class="exit-hint">🚪 EXIT OPEN!</span>
+            }
+        </div>
+
+        @if (_levelName is not null)
+        {
+            <div class="kye-level-meta">
+                <div class="kye-level-name">@_levelName</div>
+                <div class="kye-level-badges">
+                    <span class="kye-badge">@CurrentPackName</span>
+                    <span class="kye-badge">@CurrentTierName</span>
+                    @if (CurrentBestScore is int bestScore)
+                    {
+                        <span class="kye-badge complete">Best score @bestScore</span>
+                    }
+                    @if (CurrentLevel is not null && IsLevelCompleted(CurrentLevel))
+                    {
+                        <span class="kye-badge complete">Completed</span>
+                    }
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_levelHint))
+                {
+                    <div class="kye-level-hint">@_levelHint</div>
+                }
+            </div>
+        }
+
+        <div class="kye-board-wrap">
+        <div class="kye-board" style="@BoardStyle" @ref="_boardRef" @onkeydown="HandleKeyDown" @onkeydown:preventDefault tabindex="0">
+            @for (int row = 0; row < Rows; row++)
+            {
+                @for (int col = 0; col < Cols; col++)
+                {
+                    var r = row; var c = col;
+                    <div class="iso-tile" style="@TileStyle(r, c)">
+                        <div class="iso-floor @FloorClass(r, c)"></div>
+
+                        @if (HasSolid(r, c))
+                        {
+                            <div class="iso-solid @SolidClass(r, c)" style="@SolidStyle(r, c)">
+                                <div class="solid-detail"></div>
+                            </div>
+                        }
+
+                        @if (HasObject(r, c))
+                        {
+                            <div class="iso-object @ObjectClass(r, c)">@ObjectContent(r, c)</div>
+                        }
+                    </div>
+                }
+            }
+
+            <div class="iso-actors-layer">
+                <div class="iso-actor actor-player" style="@ActorStyle(_px, _py, 3, _playerHopStamp)">
+                    <div class="iso-actor-shadow"></div>
+                    <div class="iso-actor-sprite"></div>
+                </div>
+
+                @for (int i = 0; i < _roundels.Count; i++)
+                {
+                    var roundel = _roundels[i];
+                    <div class="iso-actor actor-roundel" style="@ActorStyle(roundel.X, roundel.Y, 2, _roundelHopStamps[i])">
+                        <div class="iso-actor-shadow"></div>
+                        <div class="iso-actor-sprite"></div>
+                    </div>
+                }
+
+                @for (int i = 0; i < _rockies.Count; i++)
+                {
+                    var rocky = _rockies[i];
+                    <div class="iso-actor actor-rocky" style="@ActorStyle(rocky.X, rocky.Y, 1, _rockyHopStamps[i])">
+                        <div class="iso-actor-shadow"></div>
+                        <div class="iso-actor-sprite"></div>
+                    </div>
+                }
+
+                @for (int i = 0; i < _pushers.Count; i++)
+                {
+                    var pusher = _pushers[i];
+                    <div class="iso-actor @PusherActorClass(pusher)" style="@ActorStyle(pusher.X, pusher.Y, 1, _pusherHopStamps[i])">
+                        <div class="iso-actor-shadow"></div>
+                        <div class="iso-actor-sprite"></div>
+                    </div>
+                }
+            </div>
+
+            <div class="iso-wall-overlays">
+                @for (int row = 0; row < Rows; row++)
+                {
+                    @for (int col = 0; col < Cols; col++)
+                    {
+                        var r = row; var c = col;
+                        @if (HasSolid(r, c))
+                        {
+                            <div class="iso-front-wall @OccluderClass(r, c)" style="@OccluderStyle(r, c)">
+                                <div class="solid-detail"></div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+
+        @if (_gameOver || _levelComplete)
+        {
+            <div class="kye-overlay">
+                <div class="kye-message">
+                    @if (_levelComplete)
+                    {
+                        @if (_level < TotalLevels)
+                        {
+                            <h2>Level Complete! 🎉</h2>
+                            <p>Score: @_score</p>
+                            <button @onclick="NextLevel">Next Level ▶</button>
+                        }
+                        else
+                        {
+                            <h2>You Win! 🏆</h2>
+                            <h3>All levels complete!</h3>
+                            <p>Final Score: @_score</p>
+                            <button @onclick="RestartGame">Play Again</button>
+                        }
+                    }
+                    else
+                    {
+                        <h2>Game Over 💀</h2>
+                        <p>Score: @_score</p>
+                        <button @onclick="RestartLevel">Try Again</button>
+                    }
+                </div>
+            </div>
+        }
+        </div>
+
+        <div class="kye-info">Arrow keys / WASD move along screen diagonals · Collect all 💎 to open the exit 🚪 · Avoid enemies!</div>
+
+        <div class="dpad">
+            <button class="dpad-btn" style="grid-column:1;grid-row:1;" @onclick="MoveNorthWest">↖</button>
+            <button class="dpad-btn" style="grid-column:3;grid-row:1;" @onclick="MoveNorthEast">↗</button>
+            <div class="dpad-center" style="grid-column:2;grid-row:2;">ISO</div>
+            <button class="dpad-btn" style="grid-column:1;grid-row:3;" @onclick="MoveSouthWest">↙</button>
+            <button class="dpad-btn" style="grid-column:3;grid-row:3;" @onclick="MoveSouthEast">↘</button>
+        </div>
+    }
+</div>
