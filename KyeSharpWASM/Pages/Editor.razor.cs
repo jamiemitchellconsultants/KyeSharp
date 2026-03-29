@@ -81,6 +81,21 @@ public partial class Editor
     string _statusMessage = "Ready.";
     bool _statusIsError;
 
+    int WormHoleCount => CountTiles('w');
+    string WormHoleBadgeClass => WormHoleCount switch
+    {
+        0 or 2 => "ok",
+        1 => "warn",
+        _ => "error",
+    };
+    string WormHoleBadgeText => WormHoleCount switch
+    {
+        0 => "Worm holes: 0/2",
+        2 => "Worm holes: 2/2",
+        1 => "Worm holes: 1 (needs pair)",
+        _ => $"Worm holes: {WormHoleCount} (invalid)",
+    };
+
     string PreviewJson => JsonSerializer.Serialize(new LevelFileDto
     {
         Id = _levelId,
@@ -348,13 +363,13 @@ public partial class Editor
 
     void ValidateMap()
     {
-        var result = ValidateCurrentMap();
+        var result = ValidateCurrentMap(enforceWormHolePairing: false);
         SetStatus(result.Ok ? "Map is valid." : result.ErrorMessage, !result.Ok);
     }
 
     async Task ExportLevelAsync()
     {
-        var result = ValidateCurrentMap();
+        var result = ValidateCurrentMap(enforceWormHolePairing: true);
         if (!result.Ok)
         {
             SetStatus(result.ErrorMessage, true);
@@ -390,7 +405,7 @@ public partial class Editor
             if (dto.Map is null)
                 throw new InvalidOperationException("JSON level file is missing map.");
 
-            ValidateMapLines(dto.Map);
+            ValidateMapLines(dto.Map, enforceWormHolePairing: false);
 
             _levelId = string.IsNullOrWhiteSpace(dto.Id) ? "imported-level" : dto.Id.Trim();
             _levelName = string.IsNullOrWhiteSpace(dto.Name) ? "Imported Level" : dto.Name.Trim();
@@ -409,7 +424,7 @@ public partial class Editor
 
     async Task PlayThisLevelAsync()
     {
-        var result = ValidateCurrentMap();
+        var result = ValidateCurrentMap(enforceWormHolePairing: false);
         if (!result.Ok)
         {
             SetStatus(result.ErrorMessage, true);
@@ -430,14 +445,14 @@ public partial class Editor
         await Js.InvokeVoidAsync("localStorage.setItem", PreviewLevelStorageKey, previewJson);
         await Js.InvokeVoidAsync("localStorage.setItem", PreviewAutoSelectKey, levelKey);
 
-        Nav.NavigateTo("/kye");
+        Nav.NavigateTo("kye");
     }
 
-    (bool Ok, string ErrorMessage) ValidateCurrentMap()
+    (bool Ok, string ErrorMessage) ValidateCurrentMap(bool enforceWormHolePairing)
     {
         try
         {
-            ValidateMapLines(ToMapLines());
+            ValidateMapLines(ToMapLines(), enforceWormHolePairing);
             return (true, string.Empty);
         }
         catch (Exception ex)
@@ -446,13 +461,14 @@ public partial class Editor
         }
     }
 
-    static void ValidateMapLines(string[] map)
+    static void ValidateMapLines(string[] map, bool enforceWormHolePairing)
     {
         if (map.Length != Rows)
             throw new InvalidOperationException($"Map must contain exactly {Rows} rows.");
 
         var playerCount = 0;
         var exitCount = 0;
+        var wormHoleCount = 0;
 
         for (var row = 0; row < Rows; row++)
         {
@@ -467,6 +483,7 @@ public partial class Editor
 
                 if (ch == 'P') playerCount++;
                 if (ch == 'E') exitCount++;
+                if (ch == 'w') wormHoleCount++;
             }
         }
 
@@ -475,6 +492,9 @@ public partial class Editor
 
         if (exitCount != 1)
             throw new InvalidOperationException("Map must contain exactly one 'E' (exit).");
+
+        if (enforceWormHolePairing && wormHoleCount is not 0 and not 2)
+            throw new InvalidOperationException("Map must contain either 0 or 2 'w' (worm holes).");
     }
 
     string[] ToMapLines()
@@ -559,6 +579,17 @@ public partial class Editor
         RemoveAll(symbol);
         if (InBounds(row, col))
             _grid[row, col] = symbol;
+    }
+
+    int CountTiles(char symbol)
+    {
+        var count = 0;
+        for (var row = 0; row < Rows; row++)
+            for (var col = 0; col < Cols; col++)
+                if (_grid[row, col] == symbol)
+                    count++;
+
+        return count;
     }
 
     static bool IsAllowedTile(char ch)

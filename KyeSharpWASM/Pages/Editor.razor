@@ -86,6 +86,35 @@
         color: #ff9a84;
     }
 
+    .wormhole-badge {
+        border-radius: 999px;
+        border: 1px solid #2f4f79;
+        padding: 0.28rem 0.62rem;
+        font-size: 0.82em;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: #10213a;
+        color: #9cc4ff;
+    }
+
+    .wormhole-badge.ok {
+        border-color: #267950;
+        background: #123025;
+        color: #7ef0b3;
+    }
+
+    .wormhole-badge.warn {
+        border-color: #9a7223;
+        background: #35270f;
+        color: #ffd27c;
+    }
+
+    .wormhole-badge.error {
+        border-color: #9e3a37;
+        background: #351515;
+        color: #ff9a84;
+    }
+
     .editor-board-wrap {
         background: #0f1b31;
         border: 2px solid #29456f;
@@ -159,8 +188,8 @@
     <h1 class="editor-title">KYE LEVEL EDITOR</h1>
 
     <div class="editor-actions">
-        <a class="editor-btn" href="/kye">Play Game</a>
-        <a class="editor-btn" href="/">Home</a>
+        <a class="editor-btn" href="../kye">Play Game</a>
+        <a class="editor-btn" href="../">Home</a>
     </div>
 
     <div class="editor-meta">
@@ -192,6 +221,7 @@
     </div>
 
     <div class="editor-io">
+        <span class="wormhole-badge @WormHoleBadgeClass">@WormHoleBadgeText</span>
         <button type="button" class="editor-btn" @onclick="ExportLevelAsync">Export JSON</button>
         <InputFile class="editor-btn" OnChange="ImportLevelAsync" accept=".json,application/json" />
     </div>
@@ -218,7 +248,7 @@
         </div>
     </div>
 
-    <div class="tip">Use Paint, Rectangle, or Line tools. Player `P` and exit `E` stay unique. "Play This Level" opens `/kye` with your editor map.</div>
+    <div class="tip">Use Paint, Rectangle, or Line tools. Player `P` and exit `E` stay unique. Worm hole pairing (`w`: 0 or 2) is enforced on export. "Play This Level" opens `/kye` with your editor map.</div>
 
     <textarea class="editor-output" readonly>@PreviewJson</textarea>
 </div>
