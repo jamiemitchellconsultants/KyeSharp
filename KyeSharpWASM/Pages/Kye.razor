@@ -270,7 +270,7 @@
     }
 
     .floor-wall {
-        background: linear-gradient(135deg, #2f3656, #171b30);
+        background: linear-gradient(135deg, #313a54, #252d44);
     }
 
     .floor-soft {
@@ -356,15 +356,20 @@
     }
 
     .solid-wall {
-        background: linear-gradient(180deg, #596481, #2f3652);
+        background: linear-gradient(180deg, #4f5c7a, #3f4a64);
     }
 
     .solid-wall::before {
-        background: linear-gradient(135deg, #9aa8cb, #616f95);
+        background: linear-gradient(135deg, #7f8db0, #667394);
     }
 
     .solid-wall::after {
-        background: linear-gradient(180deg, #3e4864, #171d31);
+        background: linear-gradient(180deg, #414d6a, #313b54);
+    }
+
+    .solid-wall .solid-detail,
+    .occluder-wall .solid-detail {
+        display: none;
     }
 
     .solid-soft {
@@ -407,11 +412,11 @@
     }
 
     .occluder-wall {
-        background: linear-gradient(180deg, rgba(85, 97, 128, 0.96), rgba(42, 49, 73, 0.98));
+        background: linear-gradient(180deg, rgba(78, 91, 120, 0.97), rgba(63, 74, 102, 0.98));
     }
 
     .occluder-wall::after {
-        background: linear-gradient(180deg, rgba(58, 68, 96, 0.98), rgba(19, 24, 40, 1));
+        background: linear-gradient(180deg, rgba(68, 79, 108, 0.98), rgba(49, 58, 82, 1));
     }
 
     .occluder-soft {
@@ -506,8 +511,8 @@
         width: 40px;
         height: 112px;
         pointer-events: none;
-        transition: left 0.17s ease-out, top 0.17s ease-out;
-        will-change: left, top;
+        transition: left 0.2s cubic-bezier(0.22, 0.8, 0.3, 1), top 0.2s cubic-bezier(0.22, 0.8, 0.3, 1);
+        will-change: left, top, transform;
     }
 
     .iso-actor-shadow {
@@ -705,6 +710,81 @@
         font-size: 0.8em;
         border: 1px dashed #1c2740;
         border-radius: 8px;
+    }
+
+    /* Top-down board overrides */
+    .kye-board-wrap {
+        padding: 10px;
+        border-radius: 12px;
+        background: #0b1324;
+        box-shadow: 0 0 20px rgba(10, 60, 140, 0.35);
+    }
+
+    .iso-tile,
+    .iso-actor {
+        width: 32px;
+        height: 32px;
+    }
+
+    .iso-floor {
+        left: 0;
+        bottom: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: 1px solid rgba(100, 145, 205, 0.22);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .iso-floor::after {
+        display: none;
+    }
+
+    .iso-solid,
+    .iso-wall-overlays {
+        display: none;
+    }
+
+    .iso-object {
+        left: 50%;
+        bottom: 50%;
+        transform: translate(-50%, 50%);
+        z-index: 2;
+        transition: transform 0.2s ease-out;
+    }
+
+    .iso-object::before {
+        display: none;
+    }
+
+    .iso-actor-shadow {
+        left: 50%;
+        bottom: 8px;
+        width: 17px;
+        height: 7px;
+        transform: translateX(-50%);
+        opacity: 0.55;
+        display: block;
+        animation: var(--shadow-name, none) 0.28s ease-out;
+    }
+
+    .iso-actor-sprite {
+        left: 50%;
+        bottom: 50%;
+        transform: translate(-50%, 50%);
+        animation: var(--hop-name, none) 0.28s ease-out;
+    }
+
+    .object-turner,
+    .object-anti-turner {
+        animation-duration: 1.35s;
+        animation-timing-function: linear;
+    }
+
+    .object-wormhole {
+        animation-duration: 1.8s;
+        animation-timing-function: ease-in-out;
     }
 </style>
 
@@ -908,14 +988,14 @@
         }
         </div>
 
-        <div class="kye-info">Arrow keys / WASD move along screen diagonals · Collect all 💎 to open the exit 🚪 · Avoid enemies!</div>
+        <div class="kye-info">Arrow keys / WASD move in four directions · Collect all 💎 to open the exit 🚪 · Avoid enemies!</div>
 
         <div class="dpad">
-            <button class="dpad-btn" style="grid-column:1;grid-row:1;" @onclick="MoveNorthWest">↖</button>
-            <button class="dpad-btn" style="grid-column:3;grid-row:1;" @onclick="MoveNorthEast">↗</button>
-            <div class="dpad-center" style="grid-column:2;grid-row:2;">ISO</div>
-            <button class="dpad-btn" style="grid-column:1;grid-row:3;" @onclick="MoveSouthWest">↙</button>
-            <button class="dpad-btn" style="grid-column:3;grid-row:3;" @onclick="MoveSouthEast">↘</button>
+            <button class="dpad-btn" style="grid-column:2;grid-row:1;" @onclick="MoveUp">↑</button>
+            <button class="dpad-btn" style="grid-column:1;grid-row:2;" @onclick="MoveLeft">←</button>
+            <div class="dpad-center" style="grid-column:2;grid-row:2;">TOP</div>
+            <button class="dpad-btn" style="grid-column:3;grid-row:2;" @onclick="MoveRight">→</button>
+            <button class="dpad-btn" style="grid-column:2;grid-row:3;" @onclick="MoveDown">↓</button>
         </div>
     }
 </div>

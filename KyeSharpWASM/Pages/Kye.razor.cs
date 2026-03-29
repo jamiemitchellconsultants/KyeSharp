@@ -17,17 +17,15 @@ public partial class Kye : IDisposable
     const string PreviewAutoSelectKey = "kye.preview-level-select.v1";
     const int MaxImportedPackBytes = 512_000;
     const int MaxImportedProgressBytes = 256_000;
-    const int TileWidth = 40;
-    const int TileHeight = 20;
-    const int TileHalfWidth = TileWidth / 2;
-    const int TileHalfHeight = TileHeight / 2;
-    const int TileRenderHeight = 112;
-    const int BoardInsetX = 24;
-    const int BoardInsetY = 24;
+    const int TileWidth = 32;
+    const int TileHeight = 32;
+    const int TileRenderHeight = 32;
+    const int BoardInsetX = 10;
+    const int BoardInsetY = 10;
 
     // ─── Cell type ────────────────────────────────────────────────────────────
     enum Cell { Empty, Wall, Soft, Diamond, Turner, AntiTurner, WormHole, ExitClosed, ExitOpen }
-    enum ScreenDirection { NorthWest, NorthEast, SouthWest, SouthEast }
+    enum MoveDirection { Left, Up, Down, Right }
 
     sealed class LevelManifestDto
     {
@@ -1066,20 +1064,20 @@ public partial class Kye : IDisposable
     }
 
     // ─── Input ────────────────────────────────────────────────────────────────
-    void TryMoveScreen(ScreenDirection direction)
+    void TryMoveDirection(MoveDirection direction)
     {
         switch (direction)
         {
-            case ScreenDirection.NorthWest:
+            case MoveDirection.Left:
                 TryMove(-1, 0);
                 break;
-            case ScreenDirection.NorthEast:
+            case MoveDirection.Up:
                 TryMove(0, -1);
                 break;
-            case ScreenDirection.SouthWest:
+            case MoveDirection.Down:
                 TryMove(0, 1);
                 break;
-            case ScreenDirection.SouthEast:
+            case MoveDirection.Right:
                 TryMove(1, 0);
                 break;
         }
@@ -1094,7 +1092,7 @@ public partial class Kye : IDisposable
             case "A":
             case "q":
             case "Q":
-                TryMoveScreen(ScreenDirection.NorthWest);
+                TryMoveDirection(MoveDirection.Left);
                 break;
 
             case "ArrowUp":
@@ -1102,7 +1100,7 @@ public partial class Kye : IDisposable
             case "W":
             case "e":
             case "E":
-                TryMoveScreen(ScreenDirection.NorthEast);
+                TryMoveDirection(MoveDirection.Up);
                 break;
 
             case "ArrowDown":
@@ -1110,7 +1108,7 @@ public partial class Kye : IDisposable
             case "S":
             case "z":
             case "Z":
-                TryMoveScreen(ScreenDirection.SouthWest);
+                TryMoveDirection(MoveDirection.Down);
                 break;
 
             case "ArrowRight":
@@ -1118,15 +1116,15 @@ public partial class Kye : IDisposable
             case "D":
             case "c":
             case "C":
-                TryMoveScreen(ScreenDirection.SouthEast);
+                TryMoveDirection(MoveDirection.Right);
                 break;
         }
     }
 
-    void MoveNorthWest() => TryMoveScreen(ScreenDirection.NorthWest);
-    void MoveNorthEast() => TryMoveScreen(ScreenDirection.NorthEast);
-    void MoveSouthWest() => TryMoveScreen(ScreenDirection.SouthWest);
-    void MoveSouthEast() => TryMoveScreen(ScreenDirection.SouthEast);
+    void MoveLeft() => TryMoveDirection(MoveDirection.Left);
+    void MoveUp() => TryMoveDirection(MoveDirection.Up);
+    void MoveDown() => TryMoveDirection(MoveDirection.Down);
+    void MoveRight() => TryMoveDirection(MoveDirection.Right);
 
     // ─── Navigation actions ───────────────────────────────────────────────────
     async Task NextLevel()
@@ -1313,8 +1311,8 @@ public partial class Kye : IDisposable
     }
 
     // ─── Rendering helpers ────────────────────────────────────────────────────
-    int BoardPixelWidth => ((Cols + Rows - 1) * TileHalfWidth) + TileWidth + (BoardInsetX * 2);
-    int BoardPixelHeight => ((Cols + Rows - 2) * TileHalfHeight) + TileRenderHeight + (BoardInsetY * 2);
+    int BoardPixelWidth => (Cols * TileWidth) + (BoardInsetX * 2);
+    int BoardPixelHeight => (Rows * TileHeight) + (BoardInsetY * 2);
     string BoardStyle => $"width:{BoardPixelWidth}px;height:{BoardPixelHeight}px;";
     string CurrentPackName => CurrentLevel?.PackName ?? string.Empty;
     string CurrentTierName => CurrentLevel?.TierName ?? string.Empty;
@@ -1324,9 +1322,9 @@ public partial class Kye : IDisposable
 
     (int Left, int Top, int ZIndex) ProjectTile(int row, int col)
     {
-        var left = BoardInsetX + ((col - row + Rows - 1) * TileHalfWidth);
-        var top = BoardInsetY + ((col + row) * TileHalfHeight);
-        var zIndex = 10 + ((row + col) * 10);
+        var left = BoardInsetX + (col * TileWidth);
+        var top = BoardInsetY + (row * TileHeight);
+        var zIndex = 10 + row;
 
         return (left, top, zIndex);
     }
@@ -1432,7 +1430,8 @@ public partial class Kye : IDisposable
 
         return _grid[row, col] switch
         {
-            Cell.Wall => 54 + (variance * 6),
+            // Walls are fixed-size cubes to keep the board silhouette consistent.
+            Cell.Wall => 36,
             Cell.Soft => 42 + (variance * 4),
             _ => 0,
         };
