@@ -756,6 +756,15 @@ public partial class Kye : IDisposable
                 continue;
             }
 
+            if (nx == _px && ny == _py)
+            {
+                if (!TryPushPlayerByPusher(dx, dy))
+                {
+                    _pushers[i] = new(p.X, p.Y, -dx, -dy);
+                    continue;
+                }
+            }
+
             if (IsNonPusherActorAt(nx, ny) || IsPusherAt(nx, ny, i))
                 continue;
 
@@ -783,6 +792,67 @@ public partial class Kye : IDisposable
             _pushers[i] = new(nx, ny, nextDx, nextDy);
             _pusherHopStamps[i]++;
         }
+    }
+
+    bool TryPushPlayerByPusher(int dx, int dy)
+    {
+        var nx = _px + dx;
+        var ny = _py + dy;
+
+        if (nx < 0 || nx >= Cols || ny < 0 || ny >= Rows)
+            return false;
+
+        var target = _grid[ny, nx];
+        if (target is Cell.Wall or Cell.Soft or Cell.ExitClosed)
+            return false;
+
+        var fx = nx;
+        var fy = ny;
+        if (target == Cell.WormHole)
+        {
+            var destination = GetPairedWormHole(nx, ny);
+            if (destination is not null)
+            {
+                fx = destination.Value.X;
+                fy = destination.Value.Y;
+            }
+        }
+
+        if (_pushers.Any(r => r.X == fx && r.Y == fy))
+            return false;
+
+        if (IsLethalEnemyAt(fx, fy))
+        {
+            _px = fx;
+            _py = fy;
+            _playerHopStamp++;
+            Die();
+            return true;
+        }
+
+        if (_grid[fy, fx] == Cell.ExitOpen)
+        {
+            _px = fx;
+            _py = fy;
+            _playerHopStamp++;
+            _levelComplete = true;
+            MarkCurrentLevelCompleted();
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
+            return true;
+        }
+
+        if (_grid[fy, fx] == Cell.Diamond)
+        {
+            _grid[fy, fx] = Cell.Empty;
+            _diamondsLeft--;
+            _score += 10;
+            if (_diamondsLeft == 0) OpenExit();
+        }
+
+        _px = fx;
+        _py = fy;
+        _playerHopStamp++;
+        return true;
     }
 
     bool TryPushTile(int tileX, int tileY, int dx, int dy)
@@ -933,11 +1003,13 @@ public partial class Kye : IDisposable
 
     static (int Dx, int Dy) RotateAntiClockwise(int dx, int dy) => (dy, -dx);
 
+    bool IsLethalEnemyAt(int col, int row)
+        => _roundels.Any(r => r.X == col && r.Y == row)
+           || _rockies.Any(r => r.X == col && r.Y == row);
+
     void CheckEnemyCollisions()
     {
-        if (_roundels.Any(r => r.X == _px && r.Y == _py) ||
-            _rockies.Any(r => r.X == _px && r.Y == _py) ||
-            _pushers.Any(r => r.X == _px && r.Y == _py))
+        if (IsLethalEnemyAt(_px, _py))
             Die();
     }
 
@@ -992,9 +1064,7 @@ public partial class Kye : IDisposable
         }
 
         // Collide with enemy after movement/teleport resolution
-        if (_roundels.Any(r => r.X == fx && r.Y == fy) ||
-            _rockies.Any(r => r.X == fx && r.Y == fy) ||
-            _pushers.Any(r => r.X == fx && r.Y == fy))
+        if (IsLethalEnemyAt(fx, fy))
         { Die(); return; }
 
         // Collect diamond

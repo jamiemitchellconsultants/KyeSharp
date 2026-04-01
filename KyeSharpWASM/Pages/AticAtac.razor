@@ -1,0 +1,448 @@
+@page "/atic-atac"
+
+<PageTitle>Atic Atac Tribute</PageTitle>
+
+<style>
+    .atic-wrap {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1b1735 0%, #090d18 62%);
+        color: #e4efff;
+        font-family: 'Courier New', monospace;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .atic-title {
+        margin: 4px 0 0;
+        color: #ffd36c;
+        text-shadow: 0 0 16px rgba(255, 211, 108, 0.72);
+        letter-spacing: 0.14em;
+    }
+
+    .atic-subtitle {
+        margin: 0;
+        color: #9ab5d8;
+        text-align: center;
+        max-width: 52rem;
+        line-height: 1.5;
+    }
+
+    .atic-disclaimer {
+        color: #6f88ab;
+        font-size: 0.82rem;
+        text-align: center;
+        max-width: 52rem;
+    }
+
+    .atic-toolbar,
+    .atic-hud,
+    .atic-keybar,
+    .atic-controls,
+    .atic-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .atic-btn,
+    .atic-link {
+        background: #14213d;
+        color: #d9ebff;
+        border: 1px solid #3d5b8d;
+        border-radius: 9px;
+        padding: 0.52rem 0.9rem;
+        font-family: inherit;
+        font-size: 0.92rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.16s ease, box-shadow 0.16s ease;
+        box-shadow: 0 0 16px rgba(45, 95, 185, 0.12);
+    }
+
+    .atic-btn:hover,
+    .atic-link:hover {
+        background: #1a315a;
+        box-shadow: 0 0 20px rgba(45, 110, 210, 0.22);
+    }
+
+    .atic-hud {
+        gap: 16px;
+        background: rgba(8, 15, 29, 0.8);
+        border: 1px solid #243857;
+        border-radius: 12px;
+        padding: 0.65rem 1rem;
+    }
+
+    .atic-hud-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-width: 7rem;
+    }
+
+    .atic-label {
+        color: #7ea2d3;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .atic-value {
+        color: #f1f6ff;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .atic-keybar {
+        gap: 8px;
+    }
+
+    .atic-key {
+        min-width: 6.5rem;
+        text-align: center;
+        border-radius: 999px;
+        border: 1px solid #35517d;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.82rem;
+        font-weight: bold;
+        background: #101a30;
+        color: #7f97b8;
+    }
+
+    .atic-key.owned {
+        color: #f2f7ff;
+        box-shadow: 0 0 14px rgba(255, 255, 255, 0.14);
+    }
+
+    .atic-key.blue.owned {
+        border-color: #4b80ff;
+        background: rgba(28, 58, 145, 0.45);
+    }
+
+    .atic-key.green.owned {
+        border-color: #52b37b;
+        background: rgba(20, 79, 43, 0.5);
+    }
+
+    .atic-key.red.owned {
+        border-color: #df6464;
+        background: rgba(110, 29, 29, 0.52);
+    }
+
+    .atic-key.missing {
+        opacity: 0.72;
+    }
+
+    .atic-status {
+        min-height: 1.5rem;
+        color: #9ec1ef;
+        text-align: center;
+        max-width: 52rem;
+    }
+
+    .atic-objective {
+        color: #6f90be;
+        text-align: center;
+        max-width: 52rem;
+        font-size: 0.9rem;
+    }
+
+    .atic-board-shell {
+        position: relative;
+        background: linear-gradient(180deg, rgba(15, 22, 43, 0.96), rgba(8, 13, 24, 0.98));
+        border: 2px solid #27395e;
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 0 30px rgba(12, 38, 92, 0.36);
+    }
+
+    .atic-board {
+        display: grid;
+        grid-template-columns: repeat(15, 36px);
+        grid-template-rows: repeat(11, 36px);
+        gap: 3px;
+        outline: none;
+    }
+
+    .atic-board:focus {
+        box-shadow: 0 0 0 2px rgba(255, 211, 108, 0.26);
+        border-radius: 10px;
+    }
+
+    .atic-cell {
+        width: 36px;
+        height: 36px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.12rem;
+        font-weight: bold;
+        user-select: none;
+        transition: transform 0.12s ease-out, filter 0.12s ease-out, background 0.12s ease-out;
+    }
+
+    .cell-floor {
+        background: linear-gradient(180deg, #15233d, #0d1526);
+        border: 1px solid rgba(83, 110, 148, 0.18);
+    }
+
+    .cell-wall {
+        background: linear-gradient(180deg, #4f3f69, #302440);
+        border: 1px solid rgba(158, 131, 212, 0.18);
+    }
+
+    .cell-door-blue,
+    .cell-door-green,
+    .cell-door-red,
+    .cell-exit-closed,
+    .cell-exit-open {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .cell-door-blue {
+        background: linear-gradient(180deg, #315fb3, #193468);
+        color: #d7e8ff;
+    }
+
+    .cell-door-green {
+        background: linear-gradient(180deg, #2d8255, #18442d);
+        color: #e1ffec;
+    }
+
+    .cell-door-red {
+        background: linear-gradient(180deg, #a54848, #5c2323);
+        color: #ffe3e3;
+    }
+
+    .cell-exit-closed {
+        background: linear-gradient(180deg, #5d5467, #312b38);
+        color: #d1c9d8;
+    }
+
+    .cell-exit-open {
+        background: linear-gradient(180deg, #e6c162, #926a13);
+        color: #291d00;
+        box-shadow: 0 0 14px rgba(255, 204, 74, 0.28);
+    }
+
+    .cell-key-blue,
+    .cell-key-green,
+    .cell-key-red,
+    .cell-relic {
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .cell-key-blue {
+        background: linear-gradient(180deg, #122a61, #0a1633);
+        color: #8fc0ff;
+    }
+
+    .cell-key-green {
+        background: linear-gradient(180deg, #153a24, #0b1e13);
+        color: #89f4ad;
+    }
+
+    .cell-key-red {
+        background: linear-gradient(180deg, #4e1616, #240909);
+        color: #ff9d9d;
+    }
+
+    .cell-relic {
+        background: radial-gradient(circle, #ffe18a 0%, #ae7d14 55%, #3b2606 100%);
+        color: #fff4c6;
+        text-shadow: 0 0 12px rgba(255, 240, 170, 0.8);
+    }
+
+    .cell-player {
+        background: radial-gradient(circle at 35% 30%, #fff8ca 0%, #f7c14d 36%, #ba5d08 100%);
+        color: #462100;
+        text-shadow: 0 0 8px rgba(255, 234, 149, 0.7);
+        box-shadow: 0 0 18px rgba(255, 180, 48, 0.25);
+        transform: scale(1.03);
+    }
+
+    .cell-hunter {
+        background: radial-gradient(circle at 35% 30%, #ffd0d0 0%, #b53b5f 45%, #491126 100%);
+        color: #fff0f3;
+        box-shadow: 0 0 18px rgba(186, 53, 99, 0.24);
+    }
+
+    .cell-patroller {
+        background: radial-gradient(circle at 35% 30%, #dff4ff 0%, #5da8d3 48%, #12345a 100%);
+        color: #f2fbff;
+        box-shadow: 0 0 18px rgba(93, 168, 211, 0.24);
+    }
+
+    .atic-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 9, 18, 0.76);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .atic-message {
+        max-width: 28rem;
+        background: #121d34;
+        border: 2px solid #35517d;
+        border-radius: 16px;
+        box-shadow: 0 0 28px rgba(24, 82, 173, 0.28);
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .atic-message h2 {
+        margin: 0 0 0.5rem;
+        color: #ffd36c;
+    }
+
+    .atic-message p {
+        color: #a4bfdd;
+        margin: 0.35rem 0;
+    }
+
+    .atic-dpad {
+        display: grid;
+        grid-template-columns: repeat(3, 50px);
+        grid-template-rows: repeat(3, 50px);
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .atic-pad-btn,
+    .atic-pad-center {
+        border-radius: 10px;
+        border: 1px solid #30486e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: inherit;
+    }
+
+    .atic-pad-btn {
+        background: #111b31;
+        color: #d9ebff;
+        cursor: pointer;
+        font-size: 1.25rem;
+    }
+
+    .atic-pad-btn:active {
+        background: #1d3259;
+    }
+
+    .atic-pad-center {
+        color: #6e89ad;
+        background: #0d1526;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+    }
+
+    @@media (max-width: 720px) {
+        .atic-board {
+            grid-template-columns: repeat(15, 28px);
+            grid-template-rows: repeat(11, 28px);
+        }
+
+        .atic-cell {
+            width: 28px;
+            height: 28px;
+            font-size: 0.95rem;
+        }
+    }
+</style>
+
+<div class="atic-wrap">
+    <h1 class="atic-title">ATTIC ATTACK</h1>
+    <p class="atic-subtitle">A compact Blazor homage to classic 8-bit room-to-room manor adventures.</p>
+    <div class="atic-disclaimer">Original room layouts, logic, and visuals created for this project. No original Atic Atac assets are used.</div>
+
+    <div class="atic-toolbar">
+        <a class="atic-link" href="../">Home</a>
+        <a class="atic-link" href="../kye">Play Kye</a>
+        <button type="button" class="atic-btn" @onclick="RestartAdventure">Restart Tribute</button>
+    </div>
+
+    <div class="atic-hud">
+        <div class="atic-hud-block">
+            <div class="atic-label">Room</div>
+            <div class="atic-value">@CurrentRoom.Name</div>
+        </div>
+        <div class="atic-hud-block">
+            <div class="atic-label">Lives</div>
+            <div class="atic-value">@string.Join(' ', LivesDisplay)</div>
+        </div>
+        <div class="atic-hud-block">
+            <div class="atic-label">Relic</div>
+            <div class="atic-value">@(_hasRelic ? "Recovered" : "Missing")</div>
+        </div>
+    </div>
+
+    <div class="atic-keybar">
+        <div class="atic-key blue @KeyBadgeClass(_hasBlueKey)">Blue Key</div>
+        <div class="atic-key green @KeyBadgeClass(_hasGreenKey)">Green Key</div>
+        <div class="atic-key red @KeyBadgeClass(_hasRedKey)">Red Key</div>
+    </div>
+
+    <div class="atic-status">@_statusMessage</div>
+    <div class="atic-objective">@ObjectiveText</div>
+
+    <div class="atic-board-shell">
+        <div class="atic-board" @ref="_boardRef" tabindex="0" @onkeydown="HandleKeyDown" @onkeydown:preventDefault>
+            @for (var row = 0; row < RoomRows; row++)
+            {
+                @for (var col = 0; col < RoomCols; col++)
+                {
+                    var r = row;
+                    var c = col;
+                    <div class="atic-cell @CellClass(r, c)">@CellGlyph(r, c)</div>
+                }
+            }
+        </div>
+
+        @if (_gameOver || _victory)
+        {
+            <div class="atic-overlay">
+                <div class="atic-message">
+                    @if (_victory)
+                    {
+                        <h2>Relic Recovered!</h2>
+                        <p>You escaped the manor and completed the tribute run.</p>
+                    }
+                    else
+                    {
+                        <h2>Lost in the Manor</h2>
+                        <p>Your lives ran out before the relic could be carried home.</p>
+                    }
+                    <p>@_statusMessage</p>
+                    <button type="button" class="atic-btn" @onclick="RestartAdventure">Play Again</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="atic-controls">
+        <div class="atic-dpad">
+            <button type="button" class="atic-pad-btn" style="grid-column:2;grid-row:1;" @onclick="MoveUp">↑</button>
+            <button type="button" class="atic-pad-btn" style="grid-column:1;grid-row:2;" @onclick="MoveLeft">←</button>
+            <div class="atic-pad-center" style="grid-column:2;grid-row:2;">MOVE</div>
+            <button type="button" class="atic-pad-btn" style="grid-column:3;grid-row:2;" @onclick="MoveRight">→</button>
+            <button type="button" class="atic-pad-btn" style="grid-column:2;grid-row:3;" @onclick="MoveDown">↓</button>
+        </div>
+    </div>
+
+    <div class="atic-actions">
+        <div class="atic-disclaimer">Controls: arrow keys / WASD / QEZC. Press <strong>R</strong> to restart.</div>
+    </div>
+</div>
+
+
